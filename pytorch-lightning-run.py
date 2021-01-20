@@ -16,9 +16,9 @@ from torchvision import transforms
 from torchvision.datasets import MNIST
 
 PARAMS = {'batch_size': 64,
-          'linear': 128,
-          'lr': 0.005,
-          'decay_factor': 0.99,
+          'linear': 256,
+          'lr': 0.007,
+          'decay_factor': 0.9,
           'max_epochs': 7}
 
 
