@@ -1,5 +1,5 @@
 import hashlib
-
+from sklearn.metrics import accuracy_score
 import neptune
 import torch
 import torch.nn as nn
@@ -33,17 +33,12 @@ PARAMS = {'fc_out_features': 500,
           'iterations': 100,
           'batch_size': 64}
 
-# Set project
-neptune.init(project_qualified_name='neptune-ai/tour-with-pytorch',
-             api_token='ANONYMOUS')
-
-PARAMS = {'lr': 0.005,
-          'momentum': 0.9,
-          'iterations': 100,
-          'batch_size': 64}
+# Initialize Neptune
+neptune.init('neptune-ai/tour-with-pytorch')
 
 # Create experiment
 neptune.create_experiment(name='pytorch-run',
+                          tags=['pytorch', 'MNIST'],
                           params=PARAMS)
 dataset = datasets.MNIST('../data',
                          train=True,
@@ -51,7 +46,7 @@ dataset = datasets.MNIST('../data',
                          transform=transforms.Compose([transforms.ToTensor()]))
 
 # Log data version
-neptune.set_property('data_version', hashlib.md5(dataset.data.numpy()).hexdigest())
+neptune.set_property('data_version', hashlib.md5(dataset.data.cpu().detach().numpy()).hexdigest())
 
 train_loader = torch.utils.data.DataLoader(dataset,
                                            batch_size=PARAMS['batch_size'],
@@ -67,6 +62,13 @@ for batch_idx, (data, target) in enumerate(train_loader):
 
     # Log loss
     neptune.log_metric('batch_loss', loss)
+
+    y_true = target.cpu().detach().numpy()
+    y_pred = outputs.argmax(axis=1).cpu().detach().numpy()
+    acc = accuracy_score(y_true, y_pred)
+
+    # Log accuracy
+    neptune.log_metric('batch_acc', acc)
 
     loss.backward()
     optimizer.step()
