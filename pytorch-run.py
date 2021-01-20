@@ -64,7 +64,7 @@ for batch_idx, (data, target) in enumerate(train_loader):
     if batch_idx % 50 == 1:
         for image, prediction in zip(data, outputs):
             description = '\n'.join(['class {}: {}'.format(i, pred)
-                                     for i, pred in enumerate(F.softmax(prediction))])
+                                     for i, pred in enumerate(F.softmax(prediction, dim=0))])
             neptune.log_image('predictions',
                               image.squeeze(),
                               description=description)
