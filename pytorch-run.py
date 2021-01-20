@@ -1,3 +1,5 @@
+import hashlib
+
 import neptune
 import torch
 import torch.nn as nn
@@ -7,12 +9,12 @@ from torchvision import datasets, transforms
 
 
 class Net(nn.Module):
-    def __init__(self):
+    def __init__(self, fc_out_features):
         super(Net, self).__init__()
         self.conv1 = nn.Conv2d(1, 20, 5, 1)
         self.conv2 = nn.Conv2d(20, 50, 5, 1)
-        self.fc1 = nn.Linear(4 * 4 * 50, 500)
-        self.fc2 = nn.Linear(500, 10)
+        self.fc1 = nn.Linear(4 * 4 * 50, fc_out_features)
+        self.fc2 = nn.Linear(fc_out_features, 10)
 
     def forward(self, x):
         x = F.relu(self.conv1(x))
@@ -24,6 +26,12 @@ class Net(nn.Module):
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
 
+
+PARAMS = {'fc_out_features': 500,
+          'lr': 0.005,
+          'momentum': 0.9,
+          'iterations': 100,
+          'batch_size': 64}
 
 # Set project
 neptune.init(project_qualified_name='neptune-ai/tour-with-pytorch',
@@ -37,18 +45,21 @@ PARAMS = {'lr': 0.005,
 # Create experiment
 neptune.create_experiment(name='pytorch-run',
                           params=PARAMS)
+dataset = datasets.MNIST('../data',
+                         train=True,
+                         download=True,
+                         transform=transforms.Compose([transforms.ToTensor()]))
 
-train_loader = torch.utils.data.DataLoader(datasets.MNIST('../data',
-                                                          train=True,
-                                                          download=True,
-                                                          transform=transforms.Compose([transforms.ToTensor()])),
+# Log data version
+neptune.set_property('data_version', hashlib.md5(dataset.data.numpy()).hexdigest())
+
+train_loader = torch.utils.data.DataLoader(dataset,
                                            batch_size=PARAMS['batch_size'],
                                            shuffle=True)
 
-model = Net()
+model = Net(PARAMS['fc_out_features'])
 optimizer = optim.SGD(model.parameters(), PARAMS['lr'], PARAMS['momentum'])
 
-# Training loop
 for batch_idx, (data, target) in enumerate(train_loader):
     optimizer.zero_grad()
     outputs = model(data)
