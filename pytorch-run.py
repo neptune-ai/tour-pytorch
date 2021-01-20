@@ -28,9 +28,9 @@ class Net(nn.Module):
         return F.log_softmax(x, dim=1)
 
 
-PARAMS = {'fc_out_features': 500,
-          'lr': 0.005,
-          'momentum': 0.9,
+PARAMS = {'fc_out_features': 400,
+          'lr': 0.008,
+          'momentum': 0.99,
           'iterations': 300,
           'batch_size': 64}
 
