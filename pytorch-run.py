@@ -1,10 +1,11 @@
 import hashlib
-from sklearn.metrics import accuracy_score
+
 import neptune
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
+from sklearn.metrics import accuracy_score
 from torchvision import datasets, transforms
 
 
@@ -46,7 +47,8 @@ dataset = datasets.MNIST('../data',
                          transform=transforms.Compose([transforms.ToTensor()]))
 
 # Log data version
-neptune.set_property('data_version', hashlib.md5(dataset.data.cpu().detach().numpy()).hexdigest())
+neptune.set_property('data_version',
+                     hashlib.md5(dataset.data.cpu().detach().numpy()).hexdigest())
 
 train_loader = torch.utils.data.DataLoader(dataset,
                                            batch_size=PARAMS['batch_size'],
