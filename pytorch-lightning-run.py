@@ -17,7 +17,7 @@ from torchvision.datasets import MNIST
 
 PARAMS = {'batch_size': 64,
           'linear': 128,
-          'learning_rate': 0.005,
+          'lr': 0.005,
           'decay_factor': 0.99,
           'max_epochs': 7}
 
@@ -187,7 +187,7 @@ trainer = pl.Trainer(logger=neptune_logger,
                      track_grad_norm=2)
 
 model = LitModel(linear=PARAMS['linear'],
-                 learning_rate=PARAMS['learning_rate'],
+                 learning_rate=PARAMS['lr'],
                  decay_factor=PARAMS['decay_factor'])
 
 dm = MNISTDataModule(normalization_vector=((0.1307,), (0.3081,)),
