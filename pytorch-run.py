@@ -31,7 +31,7 @@ class Net(nn.Module):
 PARAMS = {'fc_out_features': 500,
           'lr': 0.005,
           'momentum': 0.9,
-          'iterations': 100,
+          'iterations': 300,
           'batch_size': 64}
 
 # Initialize Neptune
