@@ -15,6 +15,12 @@ from torch.utils.data import random_split
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
+PARAMS = {'batch_size': 64,
+          'linear': 128,
+          'learning_rate': 0.005,
+          'decay_factor': 0.99,
+          'max_epochs': 7}
+
 
 class LitModel(pl.LightningModule):
     def __init__(self, linear, learning_rate, decay_factor):
@@ -159,12 +165,6 @@ def log_confusion_matrix(lit_model, data_module):
     plot_confusion_matrix(y_true, y_pred, ax=ax)
     neptune_logger.experiment.log_image('confusion_matrix', fig)
 
-
-PARAMS = {'batch_size': 64,
-          'linear': 128,
-          'learning_rate': 0.005,
-          'decay_factor': 0.99,
-          'max_epochs': 7}
 
 lr_logger = LearningRateMonitor(logging_interval='epoch')
 
