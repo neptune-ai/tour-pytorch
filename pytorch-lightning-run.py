@@ -1,19 +1,19 @@
 import os
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pytorch_lightning as pl
 import torch
 import torch.nn.functional as F
+from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
+from pytorch_lightning.loggers.neptune import NeptuneLogger
+from scikitplot.metrics import plot_confusion_matrix
 from sklearn.metrics import accuracy_score
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data import DataLoader
 from torch.utils.data import random_split
 from torchvision import transforms
 from torchvision.datasets import MNIST
-from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
-from pytorch_lightning.loggers.neptune import NeptuneLogger
-import matplotlib.pyplot as plt
-from scikitplot.metrics import plot_confusion_matrix
 
 
 class LitModel(pl.LightningModule):
@@ -124,8 +124,7 @@ class MNISTDataModule(pl.LightningDataModule):
         # transforms
         transform = transforms.Compose([transforms.ToTensor(),
                                         transforms.Normalize(self.normalization_vector[0],
-                                                             self.normalization_vector[1])
-                                        ])
+                                                             self.normalization_vector[1])])
         if stage == 'fit':
             mnist_train = MNIST(os.getcwd(), train=True, transform=transform)
             self.mnist_train, self.mnist_val = random_split(mnist_train, [55000, 5000])
@@ -150,11 +149,9 @@ def log_confusion_matrix(lit_model, data_module):
     test_data = data_module.test_dataloader()
     y_true = np.array([])
     y_pred = np.array([])
-
     for i, (x, y) in enumerate(test_data):
         y = y.cpu().detach().numpy()
         y_hat = lit_model.forward(x).argmax(axis=1).cpu().detach().numpy()
-
         y_true = np.append(y_true, y)
         y_pred = np.append(y_pred, y_hat)
 
@@ -167,9 +164,7 @@ PARAMS = {'batch_size': 64,
           'linear': 128,
           'learning_rate': 0.005,
           'decay_factor': 0.99,
-          'log_every_n_steps': 100,
-          'max_epochs': 7,
-          'track_grad_norm': 2}
+          'max_epochs': 7}
 
 lr_logger = LearningRateMonitor(logging_interval='epoch')
 
@@ -187,9 +182,9 @@ neptune_logger = NeptuneLogger(project_name='neptune-ai/tour-with-pytorch',
 
 trainer = pl.Trainer(logger=neptune_logger,
                      callbacks=[lr_logger, model_checkpoint],
-                     log_every_n_steps=PARAMS['log_every_n_steps'],
+                     log_every_n_steps=100,
                      max_epochs=PARAMS['max_epochs'],
-                     track_grad_norm=PARAMS['track_grad_norm'])
+                     track_grad_norm=2)
 
 model = LitModel(linear=PARAMS['linear'],
                  learning_rate=PARAMS['learning_rate'],
